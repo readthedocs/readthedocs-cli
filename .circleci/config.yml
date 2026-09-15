@@ -1,0 +1,51 @@
+version: 2.1
+
+commands:
+  setup-checkout:
+    description: Checkout code and initialize the common submodule
+    steps:
+      - checkout
+      # ``common`` carries the shared lint config that .pre-commit-config.yaml
+      # and .ruff.toml symlink into, and the vale styles .vale.ini points at.
+      - run: git submodule sync
+      - run: git submodule update --init
+
+jobs:
+  checks:
+    docker:
+      - image: 'cimg/python:3.14'
+    steps:
+      - setup-checkout
+      # Recipe: https://pre-commit.com/#circleci-example
+      - run:
+          name: Combine pre-commit config and python version for caching
+          command: |
+            cp common/pre-commit-config.yaml pre-commit-cache-key.txt
+            python --version --version >> pre-commit-cache-key.txt
+      - restore_cache:
+          keys:
+            - pre-commit-cache-{{ checksum "pre-commit-cache-key.txt" }}
+      - run: uv run --with tox --with tox-uv tox -e pre-commit
+      - save_cache:
+          key: pre-commit-cache-{{ checksum "pre-commit-cache-key.txt" }}
+          paths:
+            - ~/.cache/pre-commit
+
+  test:
+    parameters:
+      python:
+        type: string
+    docker:
+      - image: 'cimg/python:<< parameters.python >>'
+    steps:
+      - setup-checkout
+      - run: uv run --with tox --with tox-uv tox -e py$(echo << parameters.python >> | tr -d .)
+
+workflows:
+  test:
+    jobs:
+      - checks
+      - test:
+          matrix:
+            parameters:
+              python: ["3.10", "3.11", "3.12", "3.13", "3.14"]

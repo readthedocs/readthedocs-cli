@@ -1,0 +1,8 @@
+extend = "common/.ruff.toml"
+
+# The shared config targets py314, which lets the formatter emit 3.14-only syntax.
+# This package supports 3.10+.
+target-version = "py310"
+
+# Paths in the shared config resolve relative to common/, so exclude it here.
+extend-exclude = ["common/"]
