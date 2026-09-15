@@ -1,5 +1,5 @@
 [project]
-name = "readthedocs-cli"
+name = "readthedocs"
 version = "0.1.0"
 description = "Command line client for Read the Docs. Upload pre-built documentation artifacts."
 readme = "README.md"

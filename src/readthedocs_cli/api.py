@@ -23,7 +23,7 @@ class ReadTheDocsAPI:
         self.base_url = base_url.rstrip("/")
         self.session = session or requests.Session()
         self.session.headers["Authorization"] = f"Token {token}"
-        self.session.headers["User-Agent"] = f"readthedocs-cli/{__version__}"
+        self.session.headers["User-Agent"] = f"readthedocs/{__version__}"
 
     def initiate_upload(self, project: str, version: dict) -> dict:
         return self._post("/api/v3/upload/initiate/", {"project": project, "version": version})

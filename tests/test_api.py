@@ -45,7 +45,7 @@ def test_initiate_sends_payload_and_headers(api):
     request = responses.calls[0].request
     assert json.loads(request.body) == {"project": "proj", "version": VERSION}
     assert request.headers["Authorization"] == "Token secret"
-    assert request.headers["User-Agent"] == f"readthedocs-cli/{__version__}"
+    assert request.headers["User-Agent"] == f"readthedocs/{__version__}"
 
 
 @responses.activate

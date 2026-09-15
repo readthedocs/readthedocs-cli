@@ -6,9 +6,9 @@ Build your documentation anywhere and upload the artifacts to Read the Docs for 
 ## Installation
 
 ```bash
-uvx readthedocs-cli --help
+uvx readthedocs --help
 # or
-pip install readthedocs-cli
+pip install readthedocs
 ```
 
 Python 3.10 or newer is required.
@@ -56,12 +56,15 @@ Other CI providers work with the explicit flags.
 
 ### GitHub Actions
 
+On GitHub, use the [readthedocs/upload-action](https://github.com/readthedocs/upload-action),
+which wraps this client and resolves the Git metadata from the workflow event:
+
 ```yaml
-- uses: actions/checkout@v5
-- uses: astral-sh/setup-uv@v6
-- run: uvx readthedocs-cli upload --project-slug my-project --html-dir _build/html
-  env:
-    READTHEDOCS_TOKEN: ${{ secrets.READTHEDOCS_TOKEN }}
+- uses: readthedocs/upload-action@v1
+  with:
+    token: ${{ secrets.READTHEDOCS_TOKEN }}
+    project-slug: my-project
+    html-dir: _build/html
 ```
 
 ## Development
