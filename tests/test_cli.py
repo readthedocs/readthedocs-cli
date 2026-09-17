@@ -41,7 +41,7 @@ def upload_args(html_dir, *extra):
         "upload",
         "--project-slug",
         "proj",
-        "--html-dir",
+        "--html",
         str(html_dir),
         "--version-name",
         "main",

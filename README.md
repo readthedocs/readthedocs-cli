@@ -17,7 +17,7 @@ Python 3.10 or newer is required.
 
 ```bash
 export READTHEDOCS_TOKEN=...
-readthedocs upload --project-slug my-project --html-dir _build/html
+readthedocs upload --project-slug my-project --html _build/html
 ```
 
 Downloadable formats are optional and point at a single file each:
@@ -25,7 +25,7 @@ Downloadable formats are optional and point at a single file each:
 ```bash
 readthedocs upload \
     --project-slug my-project \
-    --html-dir _build/html \
+    --html _build/html \
     --pdf _build/latex/my-project.pdf \
     --epub _build/epub/my-project.epub
 ```
@@ -64,7 +64,7 @@ which wraps this client and resolves the Git metadata from the workflow event:
   with:
     token: ${{ secrets.READTHEDOCS_TOKEN }}
     project-slug: my-project
-    html-dir: _build/html
+    html: _build/html
 ```
 
 ## Development

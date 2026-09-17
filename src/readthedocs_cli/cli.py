@@ -41,7 +41,7 @@ def main(ctx: click.Context, api_url: str, verbose: bool) -> None:
 @main.command()
 @click.option("--project-slug", required=True, help="Slug of the project to upload to.")
 @click.option(
-    "--html-dir",
+    "--html",
     required=True,
     type=click.Path(path_type=Path),
     help="Directory containing the built HTML.",
@@ -68,7 +68,7 @@ def main(ctx: click.Context, api_url: str, verbose: bool) -> None:
 def upload(
     ctx: click.Context,
     project_slug: str,
-    html_dir: Path,
+    html: Path,
     pdf: Path | None,
     epub: Path | None,
     htmlzip: Path | None,
@@ -87,7 +87,7 @@ def upload(
         build_url = _upload(
             api_url=ctx.obj["api_url"],
             project_slug=project_slug,
-            html_dir=html_dir,
+            html_dir=html,
             files=files,
             privacy_level=privacy_level,
             version_name=version_name,
