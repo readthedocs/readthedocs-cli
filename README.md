@@ -6,9 +6,9 @@ Build your documentation anywhere and upload the artifacts to Read the Docs for 
 ## Installation
 
 ```bash
-uvx readthedocs --help
+uvx --from readthedocs-upload readthedocs --help
 # or
-pip install readthedocs
+pip install readthedocs-upload
 ```
 
 Python 3.10 or newer is required.

@@ -332,8 +332,8 @@ wheels = [
 ]
 
 [[package]]
-name = "readthedocs"
-version = "0.1.0"
+name = "readthedocs-upload"
+version = "1.0.0a1"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
