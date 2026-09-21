@@ -103,7 +103,7 @@ The version metadata is inferred from the GitLab CI predefined variables:
 
 ```yaml
 upload-docs:
-  image: ghcr.io/astral-sh/uv:python3.13-bookworm-slim
+  image: ghcr.io/astral-sh/uv:python3.13-trixie-slim
   needs:
     - build-docs
   script:
