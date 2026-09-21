@@ -20,6 +20,12 @@ def circleci(monkeypatch, **env):
         monkeypatch.setenv(name, value)
 
 
+def gitlab(monkeypatch, **env):
+    monkeypatch.setenv("GITLAB_CI", "true")
+    for name, value in env.items():
+        monkeypatch.setenv(name, value)
+
+
 @pytest.fixture
 def git_repo(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
@@ -113,6 +119,50 @@ def test_circleci_pull_request_from_same_repo_parses_url(monkeypatch):
 
 def test_circleci_without_branch_or_tag_falls_back_to_git(git_repo, monkeypatch):
     circleci(monkeypatch, CIRCLE_SHA1="abc123")
+
+    version = resolve_version()
+
+    assert version.name == "main"
+    assert version.type == "branch"
+    assert len(version.commit) == 40
+
+
+def test_gitlab_branch_pipeline(monkeypatch):
+    gitlab(monkeypatch, CI_COMMIT_BRANCH="main", CI_COMMIT_SHA="abc123")
+
+    assert resolve_version() == Version("main", "branch", "abc123")
+
+
+def test_gitlab_tag_pipeline(monkeypatch):
+    gitlab(monkeypatch, CI_COMMIT_TAG="v1.2.0", CI_COMMIT_SHA="abc123")
+
+    assert resolve_version() == Version("v1.2.0", "tag", "abc123")
+
+
+def test_gitlab_merge_request_pipeline(monkeypatch):
+    gitlab(
+        monkeypatch,
+        CI_MERGE_REQUEST_IID="481",
+        CI_MERGE_REQUEST_SOURCE_BRANCH_SHA="",
+        CI_COMMIT_SHA="abc123",
+    )
+
+    assert resolve_version() == Version("481", "external", "abc123")
+
+
+def test_gitlab_merged_results_pipeline_uses_source_branch_sha(monkeypatch):
+    gitlab(
+        monkeypatch,
+        CI_MERGE_REQUEST_IID="481",
+        CI_MERGE_REQUEST_SOURCE_BRANCH_SHA="headsha",
+        CI_COMMIT_SHA="mergesha",
+    )
+
+    assert resolve_version() == Version("481", "external", "headsha")
+
+
+def test_gitlab_without_branch_or_tag_falls_back_to_git(git_repo, monkeypatch):
+    gitlab(monkeypatch, CI_COMMIT_SHA="abc123")
 
     version = resolve_version()
 

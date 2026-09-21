@@ -20,6 +20,7 @@ DEFAULT_API_URL = "https://app.readthedocs.org"
 FORK_SECRETS_DOCS = {
     "GitHub Actions": "https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions",
     "CircleCI": "https://circleci.com/docs/oss/#pass-secrets-to-builds-from-forked-pull-requests",
+    "GitLab CI": "https://docs.gitlab.com/ci/pipelines/merge_request_pipelines/#run-pipelines-in-the-parent-project",
 }
 
 
@@ -168,6 +169,8 @@ def _get_token() -> str:
         provider = "GitHub Actions"
     elif os.environ.get("CIRCLECI") == "true" and os.environ.get("CIRCLE_PULL_REQUEST"):
         provider = "CircleCI"
+    elif os.environ.get("GITLAB_CI") == "true" and os.environ.get("CI_MERGE_REQUEST_IID"):
+        provider = "GitLab CI"
     if provider:
         message += (
             " Secrets are not available to builds triggered by pull requests from forks."
