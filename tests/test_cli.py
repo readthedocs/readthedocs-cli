@@ -102,6 +102,18 @@ def test_missing_token_on_pull_request_mentions_forks(runner, html_dir, monkeypa
 
     assert result.exit_code == 1
     assert "pull requests from forks" in result.output
+    assert "docs.github.com" in result.output
+
+
+def test_missing_token_on_circleci_pull_request_mentions_forks(runner, html_dir, monkeypatch):
+    monkeypatch.setenv("CIRCLECI", "true")
+    monkeypatch.setenv("CIRCLE_PULL_REQUEST", "https://github.com/org/repo/pull/481")
+
+    result = runner.invoke(main, upload_args(html_dir))
+
+    assert result.exit_code == 1
+    assert "pull requests from forks" in result.output
+    assert "circleci.com" in result.output
 
 
 @responses.activate

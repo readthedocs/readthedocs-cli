@@ -14,6 +14,12 @@ def github(monkeypatch, **env):
         monkeypatch.setenv(name, value)
 
 
+def circleci(monkeypatch, **env):
+    monkeypatch.setenv("CIRCLECI", "true")
+    for name, value in env.items():
+        monkeypatch.setenv(name, value)
+
+
 @pytest.fixture
 def git_repo(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
@@ -68,6 +74,51 @@ def test_github_pull_request_uses_head_sha(monkeypatch, tmp_path, event):
     )
 
     assert resolve_version() == Version("481", "external", "headsha")
+
+
+def test_circleci_branch_build(monkeypatch):
+    circleci(monkeypatch, CIRCLE_BRANCH="main", CIRCLE_SHA1="abc123")
+
+    assert resolve_version() == Version("main", "branch", "abc123")
+
+
+def test_circleci_tag_build(monkeypatch):
+    circleci(monkeypatch, CIRCLE_TAG="v1.2.0", CIRCLE_SHA1="abc123")
+
+    assert resolve_version() == Version("v1.2.0", "tag", "abc123")
+
+
+def test_circleci_pull_request_from_fork(monkeypatch):
+    circleci(
+        monkeypatch,
+        CIRCLE_BRANCH="pull/481",
+        CIRCLE_PULL_REQUEST="https://github.com/org/repo/pull/481",
+        CIRCLE_PR_NUMBER="481",
+        CIRCLE_SHA1="abc123",
+    )
+
+    assert resolve_version() == Version("481", "external", "abc123")
+
+
+def test_circleci_pull_request_from_same_repo_parses_url(monkeypatch):
+    circleci(
+        monkeypatch,
+        CIRCLE_BRANCH="feature",
+        CIRCLE_PULL_REQUEST="https://github.com/org/repo/pull/481",
+        CIRCLE_SHA1="abc123",
+    )
+
+    assert resolve_version() == Version("481", "external", "abc123")
+
+
+def test_circleci_without_branch_or_tag_falls_back_to_git(git_repo, monkeypatch):
+    circleci(monkeypatch, CIRCLE_SHA1="abc123")
+
+    version = resolve_version()
+
+    assert version.name == "main"
+    assert version.type == "branch"
+    assert len(version.commit) == 40
 
 
 def test_explicit_values_win_per_field(monkeypatch):
