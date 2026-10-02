@@ -1,8 +1,7 @@
 """
 Resolve the version metadata (name, type and commit) from the environment.
 
-Supported today: GitHub Actions and a local git checkout.
-Inference for other CI providers (GitLab CI, CircleCI, etc.) will be added here later.
+Supported today: GitHub Actions, CircleCI, GitLab CI and a local git checkout.
 """
 
 import json
@@ -45,7 +44,7 @@ def resolve_version(
     if all(explicit.values()):
         return Version(**explicit)
 
-    inferred = _from_github_actions() or _from_git()
+    inferred = _from_github_actions() or _from_circleci() or _from_gitlab_ci() or _from_git()
     values = {key: value or inferred.get(key) for key, value in explicit.items()}
     missing = [key for key, value in values.items() if not value]
     if missing:
@@ -83,6 +82,56 @@ def _from_github_actions() -> dict:
             "type": ref_type,
             "commit": os.environ.get("GITHUB_SHA"),
         }
+    return {}
+
+
+def _from_circleci() -> dict:
+    # https://circleci.com/docs/variables/#built-in-environment-variables
+    if os.environ.get("CIRCLECI") != "true":
+        return {}
+
+    commit = os.environ.get("CIRCLE_SHA1")
+    pull_request = os.environ.get("CIRCLE_PULL_REQUEST")
+    if pull_request:
+        # CIRCLE_PR_NUMBER is only set for pull requests from forks.
+        number = os.environ.get("CIRCLE_PR_NUMBER") or pull_request.rstrip("/").rsplit("/", 1)[-1]
+        log.debug("Version inferred from CircleCI pull request.")
+        return {"name": number, "type": EXTERNAL, "commit": commit}
+
+    tag = os.environ.get("CIRCLE_TAG")
+    if tag:
+        log.debug("Version inferred from CircleCI tag build.")
+        return {"name": tag, "type": TAG, "commit": commit}
+
+    branch = os.environ.get("CIRCLE_BRANCH")
+    if branch:
+        log.debug("Version inferred from CircleCI branch build.")
+        return {"name": branch, "type": BRANCH, "commit": commit}
+    return {}
+
+
+def _from_gitlab_ci() -> dict:
+    # https://docs.gitlab.com/ci/variables/predefined_variables/
+    if os.environ.get("GITLAB_CI") != "true":
+        return {}
+
+    commit = os.environ.get("CI_COMMIT_SHA")
+    merge_request = os.environ.get("CI_MERGE_REQUEST_IID")
+    if merge_request:
+        # CI_COMMIT_SHA is a temporary merge commit on merged results pipelines.
+        head = os.environ.get("CI_MERGE_REQUEST_SOURCE_BRANCH_SHA") or commit
+        log.debug("Version inferred from GitLab CI merge request pipeline.")
+        return {"name": merge_request, "type": EXTERNAL, "commit": head}
+
+    tag = os.environ.get("CI_COMMIT_TAG")
+    if tag:
+        log.debug("Version inferred from GitLab CI tag pipeline.")
+        return {"name": tag, "type": TAG, "commit": commit}
+
+    branch = os.environ.get("CI_COMMIT_BRANCH")
+    if branch:
+        log.debug("Version inferred from GitLab CI branch pipeline.")
+        return {"name": branch, "type": BRANCH, "commit": commit}
     return {}
 
 
