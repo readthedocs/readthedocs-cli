@@ -116,6 +116,17 @@ def test_missing_token_on_circleci_pull_request_mentions_forks(runner, html_dir,
     assert "circleci.com" in result.output
 
 
+def test_missing_token_on_gitlab_merge_request_mentions_forks(runner, html_dir, monkeypatch):
+    monkeypatch.setenv("GITLAB_CI", "true")
+    monkeypatch.setenv("CI_MERGE_REQUEST_IID", "481")
+
+    result = runner.invoke(main, upload_args(html_dir))
+
+    assert result.exit_code == 1
+    assert "pull requests from forks" in result.output
+    assert "docs.gitlab.com" in result.output
+
+
 @responses.activate
 def test_invalid_html_dir_fails_before_any_request(runner, tmp_path, token):
     result = runner.invoke(main, upload_args(tmp_path / "missing"))
