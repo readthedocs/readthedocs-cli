@@ -186,6 +186,67 @@ def test_api_url_env_var(runner, html_dir, token, monkeypatch):
     assert responses.calls[0].request.url == "https://devthedocs.org/api/v3/upload/initiate/"
 
 
+def without_project_slug(args):
+    index = args.index("--project-slug")
+    return args[:index] + args[index + 2 :]
+
+
+@responses.activate
+def test_project_token_infers_project(runner, html_dir, monkeypatch):
+    monkeypatch.setenv("READTHEDOCS_TOKEN", "rtdorg_project_abc_secret")
+    register_success()
+
+    result = runner.invoke(main, without_project_slug(upload_args(html_dir)))
+
+    assert result.exit_code == 0, result.output
+    assert json.loads(responses.calls[0].request.body) == {
+        "version": {"name": "main", "type": "branch", "commit": "abc123"},
+    }
+    assert responses.calls[0].request.headers["Authorization"] == "Token rtdorg_project_abc_secret"
+
+
+@responses.activate
+def test_project_token_with_project_slug_sends_it(runner, html_dir, monkeypatch):
+    monkeypatch.setenv("READTHEDOCS_TOKEN", "rtdorg_project_abc_secret")
+    register_success()
+
+    result = runner.invoke(main, upload_args(html_dir))
+
+    assert result.exit_code == 0, result.output
+    assert json.loads(responses.calls[0].request.body)["project"] == "proj"
+
+
+@responses.activate
+def test_missing_project_slug_with_user_token_fails(runner, html_dir, token):
+    result = runner.invoke(main, without_project_slug(upload_args(html_dir)))
+
+    assert result.exit_code == 1
+    assert "--project-slug is required" in result.output
+    assert len(responses.calls) == 0
+
+
+@responses.activate
+def test_business_token_infers_api_url(runner, html_dir, monkeypatch):
+    monkeypatch.setenv("READTHEDOCS_TOKEN", "rtdcom_project_abc_secret")
+    register_success("https://app.readthedocs.com")
+
+    result = runner.invoke(main, without_project_slug(upload_args(html_dir)))
+
+    assert result.exit_code == 0, result.output
+    assert responses.calls[0].request.url == "https://app.readthedocs.com/api/v3/upload/initiate/"
+
+
+@responses.activate
+def test_api_url_option_overrides_token_platform(runner, html_dir, monkeypatch):
+    monkeypatch.setenv("READTHEDOCS_TOKEN", "rtdcom_project_abc_secret")
+    register_success("https://devthedocs.org")
+
+    result = runner.invoke(main, ["--api-url", "https://devthedocs.org", *upload_args(html_dir)])
+
+    assert result.exit_code == 0, result.output
+    assert responses.calls[0].request.url == "https://devthedocs.org/api/v3/upload/initiate/"
+
+
 def test_version_option(runner):
     result = runner.invoke(main, ["--version"])
 

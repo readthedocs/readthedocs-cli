@@ -32,12 +32,26 @@ readthedocs upload \
 
 Run `readthedocs upload --help` for all options.
 
+### Project tokens
+
+With a project token, the project and the Read the Docs platform are inferred from the token,
+so `--project-slug` and `--api-url` can be omitted:
+
+```bash
+export READTHEDOCS_TOKEN=rtdorg_project_...
+readthedocs upload --html _build/html
+```
+
+Tokens starting with `rtdorg_` upload to Read the Docs Community (`https://app.readthedocs.org`),
+and tokens starting with `rtdcom_` upload to Read the Docs for Business (`https://app.readthedocs.com`).
+`--project-slug` and `--api-url` still take precedence when given.
+
 ### Environment variables
 
 | Variable | Description |
 |---|---|
 | `READTHEDOCS_TOKEN` | API token. Required. Never passed as a command line argument. |
-| `READTHEDOCS_API_URL` | Base URL of the Read the Docs instance. Defaults to `https://app.readthedocs.org`. Same as `--api-url`. |
+| `READTHEDOCS_API_URL` | Base URL of the Read the Docs instance. Inferred from the token when omitted, defaults to `https://app.readthedocs.org`. Same as `--api-url`. |
 
 ### Version metadata
 
