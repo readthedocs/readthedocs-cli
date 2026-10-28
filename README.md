@@ -46,12 +46,15 @@ Tokens starting with `rtdorg_` upload to Read the Docs Community (`https://app.r
 and tokens starting with `rtdcom_` upload to Read the Docs for Business (`https://app.readthedocs.com`).
 `--project-slug` and `--api-url` still take precedence when given.
 
+User tokens don't carry this information,
+`--project-slug` is required and `--api-url` defaults to `https://app.readthedocs.org` when using one.
+
 ### Environment variables
 
 | Variable | Description |
 |---|---|
 | `READTHEDOCS_TOKEN` | API token. Required. Never passed as a command line argument. |
-| `READTHEDOCS_API_URL` | Base URL of the Read the Docs instance. Inferred from the token when omitted, defaults to `https://app.readthedocs.org`. Same as `--api-url`. |
+| `READTHEDOCS_API_URL` | Base URL of the Read the Docs instance. Inferred from project tokens when omitted, otherwise defaults to `https://app.readthedocs.org`. Same as `--api-url`. |
 
 ### Version metadata
 

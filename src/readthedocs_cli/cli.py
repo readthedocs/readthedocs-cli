@@ -33,7 +33,7 @@ FORK_SECRETS_DOCS = {
     show_envvar=True,
     help=(
         "Base URL of the Read the Docs instance."
-        f" Inferred from the token when omitted, defaults to {DEFAULT_API_URL}."
+        f" Inferred from project tokens when omitted, otherwise defaults to {DEFAULT_API_URL}."
     ),
 )
 @click.option("-v", "--verbose", is_flag=True, help="Show debug output.")
@@ -47,7 +47,7 @@ def main(ctx: click.Context, api_url: str | None, verbose: bool) -> None:
 @main.command()
 @click.option(
     "--project-slug",
-    help="Slug of the project to upload to. Inferred from the token when using a project token.",
+    help="Slug of the project to upload to. Required unless using a project token.",
 )
 @click.option(
     "--html",
@@ -124,7 +124,7 @@ def _upload(
     if not api_url:
         api_url = token_info.api_url or DEFAULT_API_URL
     if not project_slug and not token_info.is_project_scoped:
-        raise ReadTheDocsError("--project-slug is required, unless using a project token.")
+        raise ReadTheDocsError("--project-slug is required when not using a project token.")
 
     version = resolve_version(name=version_name, type=version_type, commit=commit)
     log.info(
