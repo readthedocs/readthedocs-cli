@@ -4,6 +4,7 @@ Infer the platform and scope of a Read the Docs API token from its prefix.
 API tokens have the form ``<platform>_<scope>_<random>_<secret>``,
 for example ``rtdorg_project_<random>_<secret>``.
 User tokens have no prefix, nothing is inferred from them.
+The project is only inferred from project scoped tokens.
 """
 
 from dataclasses import dataclass
@@ -14,7 +15,6 @@ PLATFORM_API_URLS = {
     "rtdcom": "https://app.readthedocs.com",
 }
 PROJECT_SCOPE = "project"
-SCOPES = (PROJECT_SCOPE,)
 
 
 @dataclass
@@ -32,8 +32,14 @@ class TokenInfo:
 
 
 def parse_token(token: str) -> TokenInfo:
+    """
+    Return the platform and scope of the token.
+
+    The platform is inferred from any of our tokens, whatever their scope,
+    the scope is kept as is, so new scopes (organization, user) work without changes.
+    """
     platform, _, rest = token.partition("_")
-    scope, _, _ = rest.partition("_")
-    if platform not in PLATFORM_API_URLS or scope not in SCOPES:
+    if platform not in PLATFORM_API_URLS:
         return TokenInfo()
-    return TokenInfo(platform=platform, scope=scope)
+    scope, _, _ = rest.partition("_")
+    return TokenInfo(platform=platform, scope=scope or None)

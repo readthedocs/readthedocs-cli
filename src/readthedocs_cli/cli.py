@@ -33,7 +33,8 @@ FORK_SECRETS_DOCS = {
     show_envvar=True,
     help=(
         "Base URL of the Read the Docs instance."
-        f" Inferred from project tokens when omitted, otherwise defaults to {DEFAULT_API_URL}."
+        f" Inferred from API tokens (rtdorg_ or rtdcom_ prefix) when omitted,"
+        f" otherwise defaults to {DEFAULT_API_URL}."
     ),
 )
 @click.option("-v", "--verbose", is_flag=True, help="Show debug output.")
