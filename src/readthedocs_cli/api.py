@@ -25,8 +25,17 @@ class ReadTheDocsAPI:
         self.session.headers["Authorization"] = f"Token {token}"
         self.session.headers["User-Agent"] = f"readthedocs/{__version__}"
 
-    def initiate_upload(self, project: str, version: dict) -> dict:
-        return self._post("/api/v3/upload/initiate/", {"project": project, "version": version})
+    def initiate_upload(self, project: str | None, version: dict) -> dict:
+        """
+        Create a build to upload the artifacts to.
+
+        ``project`` can be omitted when using a project token,
+        the API uses the project of the token.
+        """
+        payload = {"version": version}
+        if project:
+            payload["project"] = project
+        return self._post("/api/v3/upload/initiate/", payload)
 
     def complete_upload(self, build_id: int, status: str) -> dict:
         return self._post("/api/v3/upload/complete/", {"build": build_id, "status": status})

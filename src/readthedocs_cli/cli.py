@@ -12,6 +12,7 @@ from readthedocs_cli.archive import create_archive
 from readthedocs_cli.exceptions import ReadTheDocsError
 from readthedocs_cli.metadata import VERSION_TYPES
 from readthedocs_cli.metadata import resolve_version
+from readthedocs_cli.token import parse_token
 
 
 log = logging.getLogger(__name__)
@@ -29,21 +30,26 @@ FORK_SECRETS_DOCS = {
 @click.option(
     "--api-url",
     envvar="READTHEDOCS_API_URL",
-    default=DEFAULT_API_URL,
-    show_default=True,
     show_envvar=True,
-    help="Base URL of the Read the Docs instance.",
+    help=(
+        "Base URL of the Read the Docs instance."
+        f" Inferred from API tokens (rtdorg_ or rtdcom_ prefix) when omitted,"
+        f" otherwise defaults to {DEFAULT_API_URL}."
+    ),
 )
 @click.option("-v", "--verbose", is_flag=True, help="Show debug output.")
 @click.pass_context
-def main(ctx: click.Context, api_url: str, verbose: bool) -> None:
+def main(ctx: click.Context, api_url: str | None, verbose: bool) -> None:
     """Read the Docs command line client."""
     _configure_logging(verbose)
     ctx.obj = {"api_url": api_url}
 
 
 @main.command()
-@click.option("--project-slug", required=True, help="Slug of the project to upload to.")
+@click.option(
+    "--project-slug",
+    help="Slug of the project to upload to. Required unless using a project token.",
+)
 @click.option(
     "--html",
     required=True,
@@ -71,7 +77,7 @@ def main(ctx: click.Context, api_url: str, verbose: bool) -> None:
 @click.pass_context
 def upload(
     ctx: click.Context,
-    project_slug: str,
+    project_slug: str | None,
     html: Path,
     pdf: Path | None,
     epub: Path | None,
@@ -105,8 +111,8 @@ def upload(
 
 def _upload(
     *,
-    api_url: str,
-    project_slug: str,
+    api_url: str | None,
+    project_slug: str | None,
     html_dir: Path,
     files: dict[str, Path],
     privacy_level: str | None,
@@ -115,14 +121,13 @@ def _upload(
     commit: str | None,
 ) -> str:
     token = _get_token()
+    token_info = parse_token(token)
+    if not api_url:
+        api_url = token_info.api_url or DEFAULT_API_URL
+    if not project_slug and not token_info.is_project_scoped:
+        raise ReadTheDocsError("--project-slug is required when not using a project token.")
+
     version = resolve_version(name=version_name, type=version_type, commit=commit)
-    log.info(
-        "Uploading %s %r at commit %s to project %r.",
-        version.type,
-        version.name,
-        version.commit,
-        project_slug,
-    )
     payload = {"name": version.name, "type": version.type, "commit": version.commit}
     if privacy_level:
         payload["privacy_level"] = privacy_level
@@ -136,7 +141,13 @@ def _upload(
         build_url = build["urls"]["build"]
         log.info("Build #%s created: %s", build["id"], build_url)
 
-        log.info("Uploading archive.")
+        log.info(
+            "Uploading %s %r at commit %s to project %r.",
+            version.type,
+            version.name,
+            version.commit,
+            build["project"],
+        )
         try:
             api.upload_artifacts(response["upload_url"], archive)
         except BaseException:
