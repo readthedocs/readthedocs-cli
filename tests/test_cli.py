@@ -15,7 +15,7 @@ COMPLETE_URL = f"{BASE_URL}/api/v3/upload/complete/"
 STORAGE_URL = "https://bucket.s3.amazonaws.com/"
 BUILD_URL = f"{BASE_URL}/projects/proj/builds/7/"
 INITIATE_RESPONSE = {
-    "build": {"id": 7, "urls": {"build": BUILD_URL}},
+    "build": {"id": 7, "project": "proj", "urls": {"build": BUILD_URL}},
     "version": {"slug": "main"},
     "upload_url": {"url": STORAGE_URL, "fields": {"key": "k"}},
 }
@@ -203,6 +203,7 @@ def test_project_token_infers_project(runner, html_dir, monkeypatch):
         "version": {"name": "main", "type": "branch", "commit": "abc123"},
     }
     assert responses.calls[0].request.headers["Authorization"] == "Token rtdorg_project_abc_secret"
+    assert "Uploading branch 'main' at commit abc123 to project 'proj'." in result.stderr
 
 
 @responses.activate

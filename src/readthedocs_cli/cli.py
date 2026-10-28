@@ -127,13 +127,6 @@ def _upload(
         raise ReadTheDocsError("--project-slug is required when not using a project token.")
 
     version = resolve_version(name=version_name, type=version_type, commit=commit)
-    log.info(
-        "Uploading %s %r at commit %s to %s.",
-        version.type,
-        version.name,
-        version.commit,
-        f"project {project_slug!r}" if project_slug else "the project of the token",
-    )
     payload = {"name": version.name, "type": version.type, "commit": version.commit}
     if privacy_level:
         payload["privacy_level"] = privacy_level
@@ -147,7 +140,13 @@ def _upload(
         build_url = build["urls"]["build"]
         log.info("Build #%s created: %s", build["id"], build_url)
 
-        log.info("Uploading archive.")
+        log.info(
+            "Uploading %s %r at commit %s to project %r.",
+            version.type,
+            version.name,
+            version.commit,
+            build["project"],
+        )
         try:
             api.upload_artifacts(response["upload_url"], archive)
         except BaseException:
