@@ -49,6 +49,15 @@ def test_initiate_sends_payload_and_headers(api):
 
 
 @responses.activate
+def test_initiate_without_project_omits_it(api):
+    responses.post(INITIATE_URL, json={"build": {"id": 1}}, status=201)
+
+    api.initiate_upload(None, VERSION)
+
+    assert json.loads(responses.calls[0].request.body) == {"version": VERSION}
+
+
+@responses.activate
 def test_complete_sends_build_and_status(api):
     responses.post(COMPLETE_URL, json={"build": {"id": 7}}, status=202)
 
