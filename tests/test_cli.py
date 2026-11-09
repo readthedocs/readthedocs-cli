@@ -193,7 +193,7 @@ def without_project_slug(args):
 
 @responses.activate
 def test_project_token_infers_project(runner, html_dir, monkeypatch):
-    monkeypatch.setenv("READTHEDOCS_TOKEN", "rtdorg_project_abc_secret")
+    monkeypatch.setenv("READTHEDOCS_TOKEN", "rtdcommunity_project_abc_secret")
     register_success()
 
     result = runner.invoke(main, without_project_slug(upload_args(html_dir)))
@@ -202,13 +202,16 @@ def test_project_token_infers_project(runner, html_dir, monkeypatch):
     assert json.loads(responses.calls[0].request.body) == {
         "version": {"name": "main", "type": "branch", "commit": "abc123"},
     }
-    assert responses.calls[0].request.headers["Authorization"] == "Token rtdorg_project_abc_secret"
+    assert (
+        responses.calls[0].request.headers["Authorization"]
+        == "Token rtdcommunity_project_abc_secret"
+    )
     assert "Uploading branch 'main' at commit abc123 to project 'proj'." in result.stderr
 
 
 @responses.activate
 def test_project_token_with_project_slug_sends_it(runner, html_dir, monkeypatch):
-    monkeypatch.setenv("READTHEDOCS_TOKEN", "rtdorg_project_abc_secret")
+    monkeypatch.setenv("READTHEDOCS_TOKEN", "rtdcommunity_project_abc_secret")
     register_success()
 
     result = runner.invoke(main, upload_args(html_dir))
@@ -228,7 +231,7 @@ def test_missing_project_slug_with_user_token_fails(runner, html_dir, token):
 
 @responses.activate
 def test_business_token_infers_api_url(runner, html_dir, monkeypatch):
-    monkeypatch.setenv("READTHEDOCS_TOKEN", "rtdcom_project_abc_secret")
+    monkeypatch.setenv("READTHEDOCS_TOKEN", "rtdbusiness_project_abc_secret")
     register_success("https://app.readthedocs.com")
 
     result = runner.invoke(main, without_project_slug(upload_args(html_dir)))
@@ -239,7 +242,7 @@ def test_business_token_infers_api_url(runner, html_dir, monkeypatch):
 
 @responses.activate
 def test_organization_token_infers_api_url_but_requires_project_slug(runner, html_dir, monkeypatch):
-    monkeypatch.setenv("READTHEDOCS_TOKEN", "rtdcom_organization_abc_secret")
+    monkeypatch.setenv("READTHEDOCS_TOKEN", "rtdbusiness_organization_abc_secret")
     register_success("https://app.readthedocs.com")
 
     result = runner.invoke(main, without_project_slug(upload_args(html_dir)))
@@ -255,7 +258,7 @@ def test_organization_token_infers_api_url_but_requires_project_slug(runner, htm
 
 @responses.activate
 def test_api_url_option_overrides_token_platform(runner, html_dir, monkeypatch):
-    monkeypatch.setenv("READTHEDOCS_TOKEN", "rtdcom_project_abc_secret")
+    monkeypatch.setenv("READTHEDOCS_TOKEN", "rtdbusiness_project_abc_secret")
     register_success("https://devthedocs.org")
 
     result = runner.invoke(main, ["--api-url", "https://devthedocs.org", *upload_args(html_dir)])

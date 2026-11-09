@@ -33,7 +33,7 @@ FORK_SECRETS_DOCS = {
     show_envvar=True,
     help=(
         "Base URL of the Read the Docs instance."
-        f" Inferred from API tokens (rtdorg_ or rtdcom_ prefix) when omitted,"
+        f" Inferred from API tokens (rtdcommunity_ or rtdbusiness_ prefix) when omitted,"
         f" otherwise defaults to {DEFAULT_API_URL}."
     ),
 )

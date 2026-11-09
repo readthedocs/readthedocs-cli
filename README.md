@@ -38,12 +38,12 @@ With a project token, the project and the Read the Docs platform are inferred fr
 so `--project-slug` and `--api-url` can be omitted:
 
 ```bash
-export READTHEDOCS_TOKEN=rtdorg_project_...
+export READTHEDOCS_TOKEN=rtdcommunity_project_...
 readthedocs upload --html _build/html
 ```
 
-Tokens starting with `rtdorg_` upload to Read the Docs Community (`https://app.readthedocs.org`),
-and tokens starting with `rtdcom_` upload to Read the Docs for Business (`https://app.readthedocs.com`).
+Tokens starting with `rtdcommunity_` upload to Read the Docs Community (`https://app.readthedocs.org`),
+and tokens starting with `rtdbusiness_` upload to Read the Docs for Business (`https://app.readthedocs.com`).
 The platform is inferred from tokens of any scope, but only project tokens infer the project,
 `--project-slug` is required with other tokens.
 `--project-slug` and `--api-url` still take precedence when given.
@@ -56,7 +56,7 @@ User tokens don't carry this information,
 | Variable | Description |
 |---|---|
 | `READTHEDOCS_TOKEN` | API token. Required. Never passed as a command line argument. |
-| `READTHEDOCS_API_URL` | Base URL of the Read the Docs instance. Inferred from API tokens (`rtdorg_` or `rtdcom_` prefix) when omitted, otherwise defaults to `https://app.readthedocs.org`. Same as `--api-url`. |
+| `READTHEDOCS_API_URL` | Base URL of the Read the Docs instance. Inferred from API tokens (`rtdcommunity_` or `rtdbusiness_` prefix) when omitted, otherwise defaults to `https://app.readthedocs.org`. Same as `--api-url`. |
 
 ### Version metadata
 
