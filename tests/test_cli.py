@@ -230,6 +230,29 @@ def test_missing_project_slug_with_user_token_fails(runner, html_dir, token):
 
 
 @responses.activate
+@pytest.mark.parametrize(
+    "token_value",
+    [
+        "RTDBUSINESS_project_abc_secret",
+        "rtdbusiness-project-abc-secret",
+        "rtdcom_project_abc_secret",
+    ],
+)
+def test_malformed_token_is_treated_as_user_token(runner, html_dir, monkeypatch, token_value):
+    monkeypatch.setenv("READTHEDOCS_TOKEN", token_value)
+
+    result = runner.invoke(main, without_project_slug(upload_args(html_dir)))
+    assert result.exit_code == 1
+    assert "--project-slug is required" in result.output
+    assert len(responses.calls) == 0
+
+    register_success()
+    result = runner.invoke(main, upload_args(html_dir))
+    assert result.exit_code == 0, result.output
+    assert responses.calls[0].request.url == INITIATE_URL
+
+
+@responses.activate
 def test_business_token_infers_api_url(runner, html_dir, monkeypatch):
     monkeypatch.setenv("READTHEDOCS_TOKEN", "rtdbusiness_project_abc_secret")
     register_success("https://app.readthedocs.com")
